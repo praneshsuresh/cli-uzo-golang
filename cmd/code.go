@@ -17,7 +17,12 @@ package cmd
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"os/exec"
+	"path/filepath"
 
+	"github.com/praneshsuresh/cli-uzo-golang/util"
 	"github.com/spf13/cobra"
 )
 
@@ -31,8 +36,41 @@ var codeCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var file string
 		var err error
-		var arg string
-		fmt.Println("code called")
+		var arg string = args[0]
+
+		fileExists, err := util.FileExists(arg)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		if fileExists {
+			file, err = filepath.Abs(arg)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+		} else {
+			fmt.Printf("File %v does not exist", arg)
+			return
+		}
+
+		wd, err := os.Getwd()
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		util.Unzip(file, wd)
+
+		os.Chdir(util.FilenameWithoutExtension(file))
+
+		wd, err = os.Getwd()
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		commandCode := exec.Command("code", wd)
+		err = commandCode.Run()
+
+		if err != nil {
+			log.Fatal("VS Code executable file not found in %PATH%")
+		}
 	},
 }
 
