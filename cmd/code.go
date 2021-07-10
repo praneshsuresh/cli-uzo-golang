@@ -33,38 +33,48 @@ var codeCmd = &cobra.Command{
 	Long: `This command will help to open the unzipped folder
 	to Visual Studio Code.
 	In order for this command to work, Visual Studio code should be installed in your system`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var file string
 		var err error
 		var arg string = args[0]
 
+		//check whether the zip file exists
 		fileExists, err := util.FileExists(arg)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
+
+		//if the file exists, get the absolute path of the zip file
 		if fileExists {
 			file, err = filepath.Abs(arg)
 			if err != nil {
 				fmt.Println(err.Error())
 			}
 		} else {
-			fmt.Printf("File %v does not exist", arg)
+			fmt.Printf("File %v does not exist", arg) //return this message when file doesn't exist
 			return
 		}
-
+		
+		//get the current working directory (where the zip file is located in)
 		wd, err := os.Getwd()
 		if err != nil {
 			fmt.Println(err.Error())
 		}
+
+		//calls the unzip function to unzip the zip file
 		util.Unzip(file, wd)
 
+		//change directory to the unzipped folder
 		os.Chdir(util.FilenameWithoutExtension(file))
 
+		//make the working directory as the newly changed directory
 		wd, err = os.Getwd()
 		if err != nil {
 			fmt.Println(err)
 		}
 
+		//calls the exec.Command function to tell that "code" to open VS code
 		commandCode := exec.Command("code", wd)
 		err = commandCode.Run()
 

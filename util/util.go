@@ -10,14 +10,21 @@ import (
 	"strings"
 )
 
-
+/*
+	function to unzip the zipped file
+	pass the source and destination as parameters to call the function
+	unzips the file to the destination path
+*/
 func Unzip(source, destination string) error {
+	//use zip package to open and read the zip file
 	r, err := zip.OpenReader(source)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if err := r.Close(); err != nil {
+		// close the read file at the end of the function
+		err := r.Close()
+		if err != nil {
 			panic(err)
 		}
 	}()
@@ -31,13 +38,15 @@ func Unzip(source, destination string) error {
 			return err
 		}
 		defer func() {
-			if err := rc.Close(); err != nil {
+			err := rc.Close()
+			if err != nil {
 				panic(err)
 			}
 		}()
 
+		//create the file path by joining the destination directory and file name
 		path := filepath.Join(destination, f.Name)
-		
+
 		//check for directory traversal
 		if !strings.HasPrefix(path, filepath.Clean(destination)+string(os.PathSeparator)) {
 			return fmt.Errorf("illegal file path: %s", path)
@@ -52,7 +61,8 @@ func Unzip(source, destination string) error {
 				return err
 			}
 			defer func() {
-				if err := f.Close(); err != nil {
+				err := f.Close()
+				if err != nil {
 					panic(err)
 				}
 			}()
@@ -65,6 +75,7 @@ func Unzip(source, destination string) error {
 		return nil
 	}
 
+	//calls the extract and write function for all the files in the zipped folder
 	for _, f := range r.File {
 		err := extractAndWrite(f)
 		if err != nil {
@@ -79,6 +90,11 @@ func FilenameWithoutExtension(fn string) string {
 	return strings.TrimSuffix(fn, path.Ext(fn))
 }
 
+/*
+	function to check whether the zip file exists
+	checking on the file info on the specified path
+	if there are no errors, then file exists
+*/
 func FileExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
