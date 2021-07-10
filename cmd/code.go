@@ -29,6 +29,9 @@ var codeCmd = &cobra.Command{
 	to Visual Studio Code.
 	In order for this command to work, Visual Studio code should be installed in your system`,
 	Run: func(cmd *cobra.Command, args []string) {
+		var file string
+		var err error
+		var arg string
 		fmt.Println("code called")
 	},
 }
