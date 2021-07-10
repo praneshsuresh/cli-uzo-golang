@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 NAME HERE <EMAIL ADDRESS>
+Copyright © 2021 PRANESH SURESH <https://github.com/praneshsuresh>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -26,18 +27,34 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var File string
+
 // codeCmd represents the code command
 var codeCmd = &cobra.Command{
-	Use:   "code",
+	Use:   "code <zip_file_name>",
 	Short: "It will open the directory in Visual Studio Code",
 	Long: `This command will help to open the unzipped folder
 	to Visual Studio Code.
 	In order for this command to work, Visual Studio code should be installed in your system`,
-	Args: cobra.ExactArgs(1),
+	Args: func(cmd *cobra.Command, args []string) error {
+		if File == "" && len(args) < 1 {
+			return errors.New("accept(s) 1 argument")
+		}
+		return nil
+	},
+	Example: `cli-uzo-golang code demo.zip
+	cli-uzo-golang code \Downloads\demo.zip`,
+	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		var file string
 		var err error
-		var arg string = args[0]
+		var arg string
+
+		if File != "" {
+			arg = File
+		} else {
+			arg = args[0]
+		}
 
 		//check whether the zip file exists
 		fileExists, err := util.FileExists(arg)
@@ -55,7 +72,7 @@ var codeCmd = &cobra.Command{
 			fmt.Printf("File %v does not exist", arg) //return this message when file doesn't exist
 			return
 		}
-		
+
 		//get the current working directory (where the zip file is located in)
 		wd, err := os.Getwd()
 		if err != nil {
@@ -91,7 +108,7 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// codeCmd.PersistentFlags().String("foo", "", "A help for foo")
+	codeCmd.PersistentFlags().StringVarP(&File, "file", "f", "", "A file name to unzip and open in IDE")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
